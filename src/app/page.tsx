@@ -130,7 +130,7 @@ export default function Home() {
         }}>
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 sm:px-6 py-4">
           <Link href="/" className="flex items-center">
-            <Image src="/logo.png" alt="CryptVest" width={150} height={44} className="h-10 w-auto brightness-0 invert" priority />
+            <Image src="/logo.png" alt="CryptVest" width={200} height={58} className="h-14 w-auto brightness-0 invert" priority />
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm" style={{color:"rgba(226,232,240,0.7)"}}>
             {[["#features","Features"],["#pricing","Pricing"],["#how","How It Works"],["#partners","Partners"]].map(([href,label])=>(
@@ -393,7 +393,7 @@ export default function Home() {
             {/* Brand column */}
             <div className="space-y-5">
               <div>
-                <Image src="/logo.png" alt="CryptVest" width={170} height={50} className="h-12 w-auto brightness-0 invert" />
+                <Image src="/logo.png" alt="CryptVest" width={220} height={64} className="h-16 w-auto brightness-0 invert" />
                 <p className="mt-0.5 text-xs font-semibold uppercase tracking-widest" style={{color:"rgba(0,240,255,0.5)"}}>
                   Crypto Prop Trading
                 </p>

@@ -53,7 +53,7 @@ export default function AdminLoginPage() {
 
       <div className="relative z-10 w-full max-w-sm">
         <Link href="/" className="mb-8 flex flex-col items-center gap-2 text-center">
-          <Image src="/logo.png" alt="CryptVest" width={190} height={56} className="h-14 w-auto brightness-0 invert" priority />
+          <Image src="/logo.png" alt="CryptVest" width={250} height={73} className="h-20 w-auto brightness-0 invert" priority />
           <span className="badge badge-purple">Admin Portal</span>
         </Link>
 
