@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { apiPost } from "@/lib/api";
 import { setCookie } from "@/lib/cookies";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -51,8 +52,8 @@ export default function AdminLoginPage() {
         style={{background:"radial-gradient(ellipse 80% 80% at 50% 50%, transparent 20%, #0a0a0f 100%)"}} />
 
       <div className="relative z-10 w-full max-w-sm">
-        <Link href="/" className="mb-8 flex flex-col items-center gap-1 text-center">
-          <span className="text-2xl font-extrabold grad-text tracking-tight">CryptVest</span>
+        <Link href="/" className="mb-8 flex flex-col items-center gap-2 text-center">
+          <Image src="/logo.png" alt="CryptVest" width={190} height={56} className="h-14 w-auto" priority />
           <span className="badge badge-purple">Admin Portal</span>
         </Link>
 

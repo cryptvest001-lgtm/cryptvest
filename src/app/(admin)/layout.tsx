@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { ClipboardList, TrendingUp, ArrowUpFromLine, Users, BarChart2, Wallet, LogOut, Menu, X } from "lucide-react";
@@ -37,7 +38,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 px-4 py-3 flex items-center justify-between border-b border-white/[0.06]"
         style={{background:"rgba(10,10,15,0.92)", backdropFilter:"blur(12px)"}}>
         <div className="flex items-center gap-2">
-          <span className="text-base font-extrabold grad-text tracking-tight">CryptVest</span>
+          <Image src="/logo.png" alt="CryptVest" width={120} height={35} className="h-8 w-auto" priority />
           <span className="badge badge-purple">Admin</span>
         </div>
         <button onClick={() => setMenuOpen(!menuOpen)}
@@ -54,7 +55,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className={`fixed md:static inset-y-0 left-0 z-40 w-60 flex-shrink-0 flex flex-col border-r border-white/[0.06] transform transition-transform duration-300 md:translate-x-0 ${menuOpen ? "translate-x-0" : "-translate-x-full"}`}
         style={{background:"rgba(255,255,255,0.02)", backdropFilter:"blur(12px)"}}>
         <div className="px-5 py-5 border-b border-white/[0.06] flex items-center justify-between">
-          <span className="text-base font-extrabold grad-text tracking-tight">CryptVest</span>
+          <Image src="/logo.png" alt="CryptVest" width={120} height={35} className="h-8 w-auto" />
           <span className="badge badge-purple">Admin</span>
         </div>
         <nav className="flex-1 py-4 space-y-1 px-3">

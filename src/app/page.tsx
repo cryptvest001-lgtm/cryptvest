@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 
@@ -128,7 +129,9 @@ export default function Home() {
           backdropFilter: scrolled ? "blur(24px)" : "none",
         }}>
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 sm:px-6 py-4">
-          <span className="text-xl font-extrabold grad-text tracking-tight">CryptVest</span>
+          <Link href="/" className="flex items-center">
+            <Image src="/logo.png" alt="CryptVest" width={150} height={44} className="h-10 w-auto" priority />
+          </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm" style={{color:"rgba(226,232,240,0.7)"}}>
             {[["#features","Features"],["#pricing","Pricing"],["#how","How It Works"],["#partners","Partners"]].map(([href,label])=>(
               <a key={href} href={href} className="transition-colors hover:text-white">{label}</a>
@@ -390,7 +393,7 @@ export default function Home() {
             {/* Brand column */}
             <div className="space-y-5">
               <div>
-                <p className="text-2xl font-extrabold grad-text tracking-tight">CryptVest</p>
+                <Image src="/logo.png" alt="CryptVest" width={170} height={50} className="h-12 w-auto" />
                 <p className="mt-0.5 text-xs font-semibold uppercase tracking-widest" style={{color:"rgba(0,240,255,0.5)"}}>
                   Crypto Prop Trading
                 </p>

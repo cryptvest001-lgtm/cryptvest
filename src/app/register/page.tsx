@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiPost } from "@/lib/api";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -59,7 +60,7 @@ export default function RegisterPage() {
 
         {/* Logo */}
         <Link href="/" className="mb-8 flex flex-col items-center gap-1 text-center">
-          <span className="text-2xl font-extrabold grad-text tracking-tight">CryptVest</span>
+          <Image src="/logo.png" alt="CryptVest" width={190} height={56} className="h-14 w-auto" priority />
           <span className="text-xs" style={{color:"rgba(226,232,240,0.4)"}}>Crypto Prop Trading</span>
         </Link>
 
