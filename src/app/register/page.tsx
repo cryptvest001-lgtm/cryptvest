@@ -60,7 +60,7 @@ export default function RegisterPage() {
 
         {/* Logo */}
         <Link href="/" className="mb-8 flex flex-col items-center gap-1 text-center">
-          <Image src="/logo.png" alt="CryptVest" width={190} height={56} className="h-14 w-auto" priority />
+          <Image src="/logo.png" alt="CryptVest" width={190} height={56} className="h-14 w-auto brightness-0 invert" priority />
           <span className="text-xs" style={{color:"rgba(226,232,240,0.4)"}}>Crypto Prop Trading</span>
         </Link>
 
