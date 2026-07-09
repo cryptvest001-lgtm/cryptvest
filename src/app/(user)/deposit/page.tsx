@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { apiGetUser, apiPostUser } from "@/lib/api";
-import { Copy, CheckCircle } from "lucide-react";
+import { Copy, CheckCircle, Send } from "lucide-react";
 
 const ASSETS = [
   {
@@ -44,6 +44,14 @@ export default function DepositPage() {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
 
+  // Claim / confirm payment form state
+  const [showClaimForm, setShowClaimForm] = useState(false);
+  const [claimAmount, setClaimAmount] = useState("");
+  const [claimTxHash, setClaimTxHash] = useState("");
+  const [claimSubmitting, setClaimSubmitting] = useState(false);
+  const [claimError, setClaimError] = useState("");
+  const [claimSuccess, setClaimSuccess] = useState("");
+
   async function selectAsset(opt: (typeof ASSETS)[0]) {
     setSelected(opt);
     setDepositAddress(null);
@@ -73,6 +81,48 @@ export default function DepositPage() {
     navigator.clipboard.writeText(depositAddress.address);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  async function refreshHistory() {
+    if (!selected) return;
+    const histRes = await apiGetUser("/deposits/history");
+    if (histRes.ok) {
+      const data = await histRes.json();
+      setHistory(
+        data.deposits.filter((d: Deposit) => d.asset === selected.asset),
+      );
+    }
+  }
+
+  async function handleClaimDeposit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!depositAddress || !selected) return;
+
+    setClaimError("");
+    setClaimSuccess("");
+    setClaimSubmitting(true);
+
+    const res = await apiPostUser("/deposits/claim", {
+      asset: selected.asset,
+      network: selected.network,
+      amount: Number(claimAmount),
+      txHash: claimTxHash || undefined,
+    });
+    setClaimSubmitting(false);
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      setClaimError(body.error || "Failed to submit deposit confirmation");
+      return;
+    }
+
+    setClaimSuccess(
+      "Thanks! Your deposit has been submitted and is pending admin confirmation.",
+    );
+    setClaimAmount("");
+    setClaimTxHash("");
+    setShowClaimForm(false);
+    refreshHistory();
   }
 
   return (
@@ -207,7 +257,14 @@ export default function DepositPage() {
               Only send {depositAddress.asset} on the {depositAddress.network}{" "}
               network. Funds sent on wrong networks will be lost.
             </p>
-          </div>
+
+            {!showClaimForm ? (
+              <button
+                onClick={() => {
+                  setShowClaimForm(true);
+                  setClaimSuccess("");
+                }}
+                className="btn-primary w-full py-2.5 text-sm flex items-center/div>
         )}
       </div>
 
