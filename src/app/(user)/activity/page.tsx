@@ -157,6 +157,9 @@ export default function ActivityPage() {
   const statusBadge = (status: string, map: Record<string, string>) =>
     `badge ${map[status] ?? "badge-muted"}`;
 
+  const selectedCount =
+    tab === "all" ? timeline.length : data?.[tab].length ?? 0;
+
   return (
     <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-6">
       <h1 className="text-2xl font-extrabold text-white">Activity</h1>
@@ -227,7 +230,7 @@ export default function ActivityPage() {
               />
             ))}
           </div>
-        ) : !data || (tab === "all" ? timeline.length === 0 : data[tab].length === 0) ? (
+        ) : !data || selectedCount === 0 ? (
           <div
             className="p-8 text-center text-sm"
             style={{ color: "rgba(226,232,240,0.45)" }}

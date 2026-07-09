@@ -31,6 +31,8 @@ export default function AdminDepositsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"ALL" | "PENDING" | "CONFIRMED">("PENDING");
   const [confirming, setConfirming] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState("");
+  const [approvalSuccess, setApprovalSuccess] = useState("");
 
   // Deposit Address Form
   const [addrEmail, setAddrEmail] = useState("");
@@ -55,9 +57,16 @@ export default function AdminDepositsPage() {
 
   async function load() {
     setLoading(true);
+    setLoadError("");
     const query = filter === "ALL" ? "" : `?status=${filter}`;
     const res = await apiGetAdmin(`/admin/deposits${query}`);
-    if (res.ok) setDeposits((await res.json()).deposits);
+    if (res.ok) {
+      setDeposits((await res.json()).deposits);
+    } else {
+      const body = await res.json().catch(() => ({}));
+      setDeposits([]);
+      setLoadError(body.error || "Could not load deposit requests.");
+    }
     setLoading(false);
   }
 
@@ -116,6 +125,7 @@ export default function AdminDepositsPage() {
 
   async function handleConfirm(id: string) {
     setConfirming(id);
+    setApprovalSuccess("");
     const res = await apiPostAdmin(`/admin/deposits/${id}/confirm`, {});
     setConfirming(null);
 
@@ -124,8 +134,17 @@ export default function AdminDepositsPage() {
       alert(b.error || "Failed to confirm deposit");
       return;
     }
+    setApprovalSuccess("Deposit approved and credited to the user's balance.");
     load();
   }
+
+  const pendingCount = deposits.filter((d) => d.status === "PENDING").length;
+  const listTitle =
+    filter === "PENDING"
+      ? "Pending Deposit Approval Requests"
+      : filter === "CONFIRMED"
+        ? "Confirmed Deposits"
+        : "All Deposits";
 
   return (
     <main className="mx-auto max-w-6xl p-4 sm:p-6 space-y-6">
@@ -223,8 +242,23 @@ export default function AdminDepositsPage() {
       {/* Deposits List */}
       <div className="glass overflow-hidden">
         <div className="px-5 py-4 border-b border-white/[0.06] flex items-center justify-between">
-          <h2 className="text-base font-bold text-white">All Deposits</h2>
-          <div className="flex gap-1 bg-white/5 p-1 rounded-xl">
+          <div>
+            <h2 className="text-base font-bold text-white">{listTitle}</h2>
+            {filter === "PENDING" && (
+              <p className="mt-1 text-xs" style={{ color: "rgba(226,232,240,0.45)" }}>
+                {pendingCount} request{pendingCount === 1 ? "" : "s"} awaiting approval
+              </p>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={load}
+              disabled={loading}
+              className="btn-outline px-3 py-1.5 text-xs disabled:opacity-50"
+            >
+              Refresh
+            </button>
+            <div className="flex gap-1 bg-white/5 p-1 rounded-xl">
             {(["PENDING", "CONFIRMED", "ALL"] as const).map((f) => (
               <button
                 key={f}
@@ -236,8 +270,12 @@ export default function AdminDepositsPage() {
                 {f}
               </button>
             ))}
+            </div>
           </div>
         </div>
+
+        {approvalSuccess && <p className="alert-green m-5 mb-0 text-sm">{approvalSuccess}</p>}
+        {loadError && <p className="alert-red m-5 mb-0 text-sm">{loadError}</p>}
 
         {loading ? (
           <div className="p-6 space-y-3">
@@ -247,7 +285,9 @@ export default function AdminDepositsPage() {
           </div>
         ) : deposits.length === 0 ? (
           <div className="p-8 text-center text-sm" style={{ color: "rgba(226,232,240,0.45)" }}>
-            No deposits found.
+            {filter === "PENDING"
+              ? "No pending deposit approval requests."
+              : "No deposits found."}
           </div>
         ) : (
           <div>
@@ -259,6 +299,9 @@ export default function AdminDepositsPage() {
                   </p>
                   <p className="text-xs" style={{ color: "rgba(226,232,240,0.5)" }}>
                     {d.user.email}
+                  </p>
+                  <p className="text-xs" style={{ color: "rgba(226,232,240,0.4)" }}>
+                    Requested {new Date(d.createdAt).toLocaleString()}
                   </p>
                   <p className="font-mono text-xs truncate max-w-xs" style={{ color: "rgba(226,232,240,0.35)" }}>
                     {d.txHash}
