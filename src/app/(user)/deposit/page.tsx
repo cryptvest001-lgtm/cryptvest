@@ -264,7 +264,71 @@ export default function DepositPage() {
                   setShowClaimForm(true);
                   setClaimSuccess("");
                 }}
-                className="btn-primary w-full py-2.5 text-sm flex items-center/div>
+                className="btn-primary w-full py-2.5 text-sm flex items-center justify-center gap-2"
+              >
+                <Send size={16} />
+                I&apos;ve sent this deposit
+              </button>
+            ) : (
+              <form onSubmit={handleClaimDeposit} className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label
+                      className="block text-xs font-semibold uppercase tracking-widest mb-2"
+                      style={{ color: "rgba(226,232,240,0.4)" }}
+                    >
+                      Amount sent
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      min="0"
+                      value={claimAmount}
+                      onChange={(e) => setClaimAmount(e.target.value)}
+                      className="input-dark w-full px-3 py-2.5 text-sm font-mono outline-none"
+                      placeholder={`Amount in ${depositAddress.asset}`}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label
+                      className="block text-xs font-semibold uppercase tracking-widest mb-2"
+                      style={{ color: "rgba(226,232,240,0.4)" }}
+                    >
+                      Tx hash
+                    </label>
+                    <input
+                      value={claimTxHash}
+                      onChange={(e) => setClaimTxHash(e.target.value)}
+                      className="input-dark w-full px-3 py-2.5 text-sm font-mono outline-none"
+                      placeholder="Optional"
+                    />
+                  </div>
+                </div>
+                {claimError && <p className="alert-red text-sm">{claimError}</p>}
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    disabled={claimSubmitting}
+                    className="btn-primary flex-1 py-2.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {claimSubmitting ? "Submitting..." : "Submit for review"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowClaimForm(false);
+                      setClaimError("");
+                    }}
+                    className="btn-outline px-4 py-2.5 text-sm"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            )}
+            {claimSuccess && <p className="alert-green text-sm">{claimSuccess}</p>}
+          </div>
         )}
       </div>
 
