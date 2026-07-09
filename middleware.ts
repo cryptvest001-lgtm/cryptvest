@@ -13,8 +13,18 @@ export function middleware(request: NextRequest) {
   }
 
   const userToken = request.cookies.get("token")?.value;
-  const protectedRoutes = ["/dashboard", "/deposit", "/stake", "/withdraw", "/activity", "/kyc"];
-  const isProtected = protectedRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`));
+  const protectedRoutes = [
+    "/dashboard",
+    "/deposit",
+    "/stake",
+    "/withdraw",
+    "/activity",
+    "/kyc",
+    "/support",
+  ];
+  const isProtected = protectedRoutes.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  );
   if (isProtected && !userToken) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
@@ -23,5 +33,14 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/dashboard", "/deposit", "/stake", "/withdraw", "/activity", "/kyc"],
+  matcher: [
+    "/admin/:path*",
+    "/dashboard",
+    "/deposit",
+    "/stake",
+    "/withdraw",
+    "/activity",
+    "/kyc",
+    "/support",
+  ],
 };
