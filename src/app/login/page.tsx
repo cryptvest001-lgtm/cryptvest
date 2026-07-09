@@ -98,7 +98,7 @@ export default function LoginPage() {
             priority
           />
           <span className="text-xs" style={{ color: "rgba(226,232,240,0.4)" }}>
-            Crypto Prop Trading
+            Crypto Staking Platform
           </span>
         </Link>
 

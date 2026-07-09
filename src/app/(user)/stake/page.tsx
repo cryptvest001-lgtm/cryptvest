@@ -111,6 +111,18 @@ export default function StakePage() {
         };
   };
 
+  const describeTerm = (plan: Plan) =>
+    plan.type === "LOCKED" && plan.termDays
+      ? `${plan.termDays} day lock`
+      : "Flexible term";
+
+  const describeExit = (plan: Plan) => {
+    if (plan.type !== "LOCKED") return "Unstake anytime";
+    return plan.earlyExitPenaltyPercent
+      ? `${Number(plan.earlyExitPenaltyPercent).toFixed(2)}% early exit penalty`
+      : "No early exit penalty configured";
+  };
+
   return (
     <div className="p-4 sm:p-6 max-w-3xl mx-auto space-y-6">
       <h1 className="text-2xl font-extrabold text-white">Stake</h1>
@@ -131,7 +143,18 @@ export default function StakePage() {
       ) : (
         <>
           <div className="glass p-6 space-y-4">
-            <h2 className="text-base font-bold text-white">Available Plans</h2>
+            <div>
+              <h2 className="text-base font-bold text-white">
+                Available Staking Plans
+              </h2>
+              <p
+                className="mt-1 text-sm"
+                style={{ color: "rgba(226,232,240,0.45)" }}
+              >
+                Choose a flexible plan or lock your balance for a higher daily
+                rate.
+              </p>
+            </div>
             {plans.length === 0 ? (
               <p
                 className="text-sm"
@@ -140,7 +163,7 @@ export default function StakePage() {
                 No active plans available.
               </p>
             ) : (
-              <div className="space-y-3">
+              <div className="grid gap-3 sm:grid-cols-2">
                 {plans.map((plan) => {
                   const isLocked = plan.type === "LOCKED";
                   const isSelected = selectedPlan?.id === plan.id;
@@ -172,35 +195,61 @@ export default function StakePage() {
                         }
                       }}
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <p className="font-bold text-white">{plan.name}</p>
-                          {isLocked && (
-                            <span className="badge badge-purple">Locked</span>
-                          )}
-                        </div>
-                        <span
-                          className="font-mono font-semibold tabular-nums"
-                          style={{ color: c }}
-                        >
-                          {Number(plan.dailyRatePercent).toFixed(3)}%
+                      <div className="flex h-full flex-col justify-between gap-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="font-bold text-white">
+                                {plan.name}
+                              </p>
+                              <span
+                                className={`badge ${isLocked ? "badge-purple" : "badge-cyan"}`}
+                              >
+                                {isLocked ? "Locked" : "Flexible"}
+                              </span>
+                            </div>
+                            <p
+                              className="mt-1 text-xs"
+                              style={{ color: "rgba(226,232,240,0.45)" }}
+                            >
+                              {describeTerm(plan)}
+                            </p>
+                          </div>
                           <span
-                            className="text-xs font-normal"
-                            style={{ color: "rgba(226,232,240,0.45)" }}
+                            className="font-mono text-lg font-semibold tabular-nums"
+                            style={{ color: c }}
                           >
-                            {" "}
-                            / day
+                            {Number(plan.dailyRatePercent).toFixed(3)}%
                           </span>
-                        </span>
+                        </div>
+                        <div
+                          className="grid grid-cols-2 gap-2 border-t pt-3"
+                          style={{ borderColor: "rgba(255,255,255,0.06)" }}
+                        >
+                          <div>
+                            <p
+                              className="text-[10px] font-semibold uppercase tracking-widest"
+                              style={{ color: "rgba(226,232,240,0.35)" }}
+                            >
+                              Accrual
+                            </p>
+                            <p className="mt-1 text-xs text-white">
+                              Daily yield
+                            </p>
+                          </div>
+                          <div>
+                            <p
+                              className="text-[10px] font-semibold uppercase tracking-widest"
+                              style={{ color: "rgba(226,232,240,0.35)" }}
+                            >
+                              Exit
+                            </p>
+                            <p className="mt-1 text-xs text-white">
+                              {describeExit(plan)}
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                      <p
-                        className="text-xs mt-1"
-                        style={{ color: "rgba(226,232,240,0.45)" }}
-                      >
-                        {isLocked
-                          ? `Locked ${plan.termDays} days${plan.earlyExitPenaltyPercent ? ` · ${plan.earlyExitPenaltyPercent}% early exit penalty` : ""}`
-                          : "Flexible — unstake anytime"}
-                      </p>
                     </button>
                   );
                 })}

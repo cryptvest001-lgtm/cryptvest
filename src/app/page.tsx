@@ -3,52 +3,48 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { motion, useInView, AnimatePresence } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 
 /* ─── types ──────────────────────────────────────────────────────── */
-type PricingTab = "instant" | "1phase" | "2phase";
+type MarketingPlan = {
+  name: string;
+  term: string;
+  dailyRate: string;
+  assets: string;
+  access: string;
+  exit: string;
+  featured: boolean;
+};
 
 /* ─── data ───────────────────────────────────────────────────────── */
 const HERO_STATS = [
-  { label: "Paid to Traders", value: 28.4, prefix: "$", suffix: "M+", decimals: 1 },
-  { label: "Active Traders",  value: 12400, prefix: "",  suffix: "+",  decimals: 0 },
-  { label: "Instruments",     value: 900,   prefix: "",  suffix: "+",  decimals: 0 },
-  { label: "Max Profit Split",value: 90,    prefix: "",  suffix: "%",  decimals: 0 },
+  { label: "Assets Supported", value: 2, prefix: "", suffix: "", decimals: 0 },
+  { label: "Daily Accrual", value: 24, prefix: "", suffix: "h", decimals: 0 },
+  { label: "Stake Options", value: 3, prefix: "", suffix: "", decimals: 0 },
+  { label: "KYC Protected", value: 100, prefix: "", suffix: "%", decimals: 0 },
 ];
 
 const FEATURES = [
-  { icon: "📈", title: "900+ Instruments",         desc: "Trade crypto, forex, indices, stocks and commodities — all on one platform." },
-  { icon: "⚡", title: "Zero Spread Trading",       desc: "No spread, ultra-low commission. We give traders an unmatched cost structure." },
-  { icon: "⏰", title: "No Time Limits",            desc: "No deadlines, no pressure. Complete phases at your own pace." },
-  { icon: "🏆", title: "Competitive Rankings",      desc: "Gamified leaderboard — compete with traders globally and unlock free prizes." },
-  { icon: "🎯", title: "Up to 100x Leverage",       desc: "1:100 leverage across all instruments for experienced position sizing." },
-  { icon: "📰", title: "News Trading Allowed",      desc: "Yes, you can trade news events. No restrictions during high volatility." },
+  { icon: "📈", title: "Daily Yield", desc: "Put idle BTC or USDT balances to work with earnings calculated every day." },
+  { icon: "⚡", title: "Fast Deposits", desc: "Generate deposit addresses, submit claims, and track confirmations from one wallet view." },
+  { icon: "⏰", title: "Flexible Terms", desc: "Choose short, balanced, or higher-yield locked plans based on your own timeline." },
+  { icon: "🏆", title: "Admin-Reviewed Payouts", desc: "Withdrawal requests move through a clear review and payment workflow." },
+  { icon: "🎯", title: "KYC-Gated Staking", desc: "Staking and withdrawal access are reserved for verified accounts." },
+  { icon: "📰", title: "Activity Ledger", desc: "Deposits, stakes, earnings, and withdrawals are visible in your account history." },
 ];
 
 const PARTNERS = ["BYBIT", "BINANCE", "COINBASE", "KRAKEN", "OKX", "BITGET"];
 
-const PLANS: Record<PricingTab, { name: string; price: number; capital: string; target: string; daily: string; overall: string; leverage: string; split: string; featured: boolean }[]> = {
-  instant: [
-    { name:"Starter",  price:49,  capital:"$5,000",   target:"8%",  daily:"4%", overall:"8%",  leverage:"1:100", split:"80%", featured:false },
-    { name:"Pro",      price:149, capital:"$25,000",  target:"8%",  daily:"4%", overall:"8%",  leverage:"1:100", split:"85%", featured:true  },
-    { name:"Elite",    price:499, capital:"$100,000", target:"8%",  daily:"4%", overall:"8%",  leverage:"1:100", split:"90%", featured:false },
-  ],
-  "1phase": [
-    { name:"Beginner", price:59,  capital:"$10,000",  target:"10%", daily:"5%", overall:"10%", leverage:"1:100", split:"80%", featured:false },
-    { name:"Advanced", price:199, capital:"$50,000",  target:"10%", daily:"5%", overall:"10%", leverage:"1:100", split:"85%", featured:true  },
-    { name:"Expert",   price:599, capital:"$200,000", target:"10%", daily:"5%", overall:"10%", leverage:"1:100", split:"90%", featured:false },
-  ],
-  "2phase": [
-    { name:"Lite",     price:45,  capital:"$5,000",   target:"8%",  daily:"4%", overall:"8%",  leverage:"1:100", split:"80%", featured:false },
-    { name:"Standard", price:129, capital:"$25,000",  target:"8%",  daily:"4%", overall:"8%",  leverage:"1:100", split:"85%", featured:true  },
-    { name:"Premium",  price:449, capital:"$100,000", target:"8%",  daily:"4%", overall:"8%",  leverage:"1:100", split:"90%", featured:false },
-  ],
-};
+const PLANS: MarketingPlan[] = [
+  { name: "Flexible Starter", term: "Open term", dailyRate: "0.350%", assets: "BTC + USDT", access: "Unstake anytime", exit: "No lock period", featured: false },
+  { name: "Growth Lock", term: "30 days", dailyRate: "0.650%", assets: "BTC + USDT", access: "Daily accrual", exit: "3% early exit penalty", featured: true },
+  { name: "Premium Lock", term: "90 days", dailyRate: "0.950%", assets: "BTC + USDT", access: "Higher daily rate", exit: "5% early exit penalty", featured: false },
+];
 
 const STEPS = [
-  { n:"01", title:"Choose Challenge",  desc:"Select your preferred account size and evaluation type. Pay once, no hidden fees." },
-  { n:"02", title:"Pass Evaluation",   desc:"Hit the profit target while staying within risk limits. Trade at your own pace." },
-  { n:"03", title:"Get Funded",        desc:"Receive your funded account and start earning up to 90% of your simulated profits." },
+  { n:"01", title:"Verify Account", desc:"Create your account, confirm your email, and complete KYC to unlock staking and withdrawals." },
+  { n:"02", title:"Fund Wallet", desc:"Deposit BTC or USDT and track credited balances from your dashboard." },
+  { n:"03", title:"Start Staking", desc:"Pick an active plan, stake your balance, and follow daily earnings in your activity ledger." },
 ];
 
 /* ─── particles ──────────────────────────────────────────────────── */
@@ -107,7 +103,6 @@ function Reveal({ children, delay=0 }: { children:React.ReactNode; delay?:number
 /* ─── main component ─────────────────────────────────────────────── */
 export default function Home() {
   const [scrolled, setScrolled] = useState(false);
-  const [tab, setTab] = useState<PricingTab>("instant");
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -167,25 +162,25 @@ export default function Home() {
           <motion.div variants={fadeUp}
             className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold"
             style={{border:"1px solid rgba(0,240,255,0.35)", color:"#00f0ff", background:"rgba(0,240,255,0.05)"}}>
-            🚀 The Future of Crypto Prop Trading
+            🚀 Smart Crypto Staking for BTC and USDT
           </motion.div>
 
           <motion.h1 variants={fadeUp}
             className="font-extrabold leading-[1.08] tracking-tight"
             style={{fontSize:"clamp(40px,7vw,72px)"}}>
-            You Trade.{" "}
-            <span className="grad-text">We Boost</span>{" "}
-            Your Capital.
+            Stake Crypto.{" "}
+            <span className="grad-text">Earn Daily</span>{" "}
+            Yield.
           </motion.h1>
 
           <motion.p variants={fadeUp} className="max-w-xl text-lg leading-relaxed" style={{color:"rgba(226,232,240,0.65)"}}>
-            Break the limits. Access up to <span style={{color:"#00f0ff"}} className="font-semibold">$500,000</span> in simulated trading capital.
-            Pass our evaluation, keep up to <span style={{color:"#a855f7"}} className="font-semibold">90%</span> of your profits. Zero time pressure.
+            Put your BTC and USDT balances to work with flexible and locked staking plans.
+            Track deposits, daily earnings, and withdrawals from one clean dashboard.
           </motion.p>
 
           <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center gap-4">
             <Link href="/register" className="btn-primary px-8 py-3.5 text-sm">
-              Start Challenge — $49
+              Start Staking
             </Link>
             <a href="#pricing" className="btn-outline px-8 py-3.5 text-sm">View Plans</a>
           </motion.div>
@@ -234,10 +229,10 @@ export default function Home() {
           <Reveal>
             <div className="text-center space-y-4">
               <h2 className="text-4xl font-extrabold md:text-5xl">
-                Why Traders Choose{" "}
+                Why Members Choose{" "}
                 <span className="grad-text">CryptVest</span>
               </h2>
-              <p style={{color:"rgba(226,232,240,0.55)"}}>Professional-grade tools with trader-first policies</p>
+              <p style={{color:"rgba(226,232,240,0.55)"}}>Simple staking tools with transparent account controls</p>
             </div>
           </Reveal>
 
@@ -270,30 +265,16 @@ export default function Home() {
         <div className="mx-auto max-w-6xl space-y-12">
           <Reveal>
             <div className="text-center space-y-4">
-              <h2 className="text-4xl font-extrabold md:text-5xl">Choose Your Challenge</h2>
-              {/* Tab switcher */}
-              <div className="inline-flex rounded-xl p-1 mt-4" style={{background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)"}}>
-                {([["instant","Instant"],["1phase","1 Phase"],["2phase","2 Phases"]] as [PricingTab,string][]).map(([key,label])=>(
-                  <button key={key} onClick={()=>setTab(key)}
-                    className="px-6 py-2 text-sm font-semibold rounded-lg transition-all"
-                    style={{
-                      background: tab===key ? "rgba(0,240,255,0.12)" : "transparent",
-                      color: tab===key ? "#00f0ff" : "rgba(226,232,240,0.5)",
-                      border: tab===key ? "1px solid rgba(0,240,255,0.3)" : "1px solid transparent",
-                    }}>
-                    {label}
-                  </button>
-                ))}
-              </div>
+              <h2 className="text-4xl font-extrabold md:text-5xl">Available Staking Plans</h2>
+              <p style={{color:"rgba(226,232,240,0.55)"}}>Pick a flexible plan or lock funds for a higher daily rate.</p>
             </div>
           </Reveal>
 
-          <AnimatePresence mode="wait">
-            <motion.div key={tab}
+            <motion.div
               className="grid gap-5 sm:grid-cols-3"
-              initial={{opacity:0, y:20}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-20}}
+              initial={{opacity:0, y:20}} animate={{opacity:1,y:0}}
               transition={{duration:0.3}}>
-              {PLANS[tab].map(plan => (
+              {PLANS.map(plan => (
                 <div key={plan.name} className={`relative p-7 ${plan.featured ? "glass-featured" : "glass"}`}>
                   {plan.featured && (
                     <span className="absolute -top-3 right-5 rounded-full px-3 py-0.5 text-xs font-bold"
@@ -302,18 +283,17 @@ export default function Home() {
                     </span>
                   )}
                   <p className="text-sm font-semibold mb-1" style={{color:"rgba(226,232,240,0.5)"}}>{plan.name}</p>
-                  <div className="flex items-end gap-1 mb-1">
-                    <span className="text-5xl font-extrabold text-white">${plan.price}</span>
+                  <div className="flex items-end gap-2 mb-1">
+                    <span className="text-5xl font-extrabold text-white">{plan.dailyRate}</span>
+                    <span className="pb-2 text-xs font-semibold uppercase tracking-widest" style={{color:"rgba(226,232,240,0.4)"}}>/ day</span>
                   </div>
-                  <p className="text-xs mb-6" style={{color:"rgba(226,232,240,0.4)"}}>one-time fee</p>
+                  <p className="text-xs mb-6" style={{color:"rgba(226,232,240,0.4)"}}>{plan.term}</p>
                   <div className="space-y-2.5 mb-7">
                     {[
-                      ["Capital", plan.capital],
-                      ["Profit Target", plan.target],
-                      ["Daily Drawdown", plan.daily],
-                      ["Overall Drawdown", plan.overall],
-                      ["Leverage", plan.leverage],
-                      ["Profit Split", plan.split],
+                      ["Assets", plan.assets],
+                      ["Accrual", plan.access],
+                      ["Term", plan.term],
+                      ["Exit", plan.exit],
                     ].map(([k,v])=>(
                       <div key={k} className="flex items-center gap-2 text-sm">
                         <span style={{color:"#22c55e"}} className="text-base">✓</span>
@@ -328,12 +308,11 @@ export default function Home() {
                         ? "btn-primary"
                         : "btn-outline"
                     }`}>
-                    Select Plan
+                    Start Staking
                   </Link>
                 </div>
               ))}
             </motion.div>
-          </AnimatePresence>
         </div>
       </section>
 
@@ -370,13 +349,13 @@ export default function Home() {
             <div className="pointer-events-none absolute inset-0" style={{background:"linear-gradient(135deg,rgba(0,240,255,0.04),rgba(168,85,247,0.04))"}} />
             <div className="relative">
               <h2 className="text-3xl font-extrabold md:text-5xl text-white">
-                Ready to Scale Your Trading?
+                Ready to Put Your Crypto to Work?
               </h2>
               <p className="mt-3 text-base" style={{color:"rgba(226,232,240,0.6)"}}>
-                Join thousands of traders who've already unlocked their potential with CryptVest.
+                Create an account, complete verification, and choose an active staking plan from your dashboard.
               </p>
               <Link href="/register" className="btn-primary inline-block mt-7 px-10 py-4 text-base">
-                Start Your Challenge Now
+                Start Staking Now
               </Link>
             </div>
           </div>
@@ -395,11 +374,11 @@ export default function Home() {
               <div>
                 <Image src="/logo.png" alt="CryptVest" width={220} height={64} className="h-16 w-auto brightness-0 invert" />
                 <p className="mt-0.5 text-xs font-semibold uppercase tracking-widest" style={{color:"rgba(0,240,255,0.5)"}}>
-                  Crypto Prop Trading
+                  Crypto Staking Platform
                 </p>
               </div>
               <p className="text-sm leading-relaxed max-w-xs" style={{color:"rgba(226,232,240,0.45)"}}>
-                The professional-grade prop trading platform for crypto traders. Access funded accounts, trade with our capital, keep up to 90% of your profits.
+                A crypto staking platform for BTC and USDT deposits, daily accrual, KYC-gated staking, and reviewed withdrawals.
               </p>
               {/* Social icons */}
               <div className="flex items-center gap-3">
@@ -454,12 +433,12 @@ export default function Home() {
 
             {/* Products */}
             <div className="space-y-4">
-              <p className="text-xs font-bold uppercase tracking-[0.15em]" style={{color:"rgba(226,232,240,0.35)"}}>Challenges</p>
+              <p className="text-xs font-bold uppercase tracking-[0.15em]" style={{color:"rgba(226,232,240,0.35)"}}>Staking</p>
               <ul className="space-y-3">
                 {[
-                  ["Instant Funding","#pricing"],
-                  ["1-Phase Evaluation","#pricing"],
-                  ["2-Phase Evaluation","#pricing"],
+                  ["Flexible Staking","#pricing"],
+                  ["Locked Staking","#pricing"],
+                  ["Daily Accrual","#pricing"],
                   ["View All Plans","#pricing"],
                   ["How It Works","#how"],
                   ["Features","#features"],
@@ -528,11 +507,11 @@ export default function Home() {
           {/* Trust badges */}
           <div className="mt-14 flex flex-wrap gap-3">
             {[
-              "✓  Simulated Trading Environment",
-              "✓  Instant Payouts",
-              "✓  900+ Instruments",
-              "✓  No Time Limits",
-              "✓  Up to 90% Profit Split",
+              "✓  BTC + USDT Support",
+              "✓  Reviewed Withdrawals",
+              "✓  KYC-Gated Staking",
+              "✓  Flexible and Locked Terms",
+              "✓  Daily Staking Accrual",
             ].map(t => (
               <span key={t} className="rounded-full px-4 py-1.5 text-xs font-medium"
                 style={{
@@ -550,7 +529,7 @@ export default function Home() {
         <div style={{borderTop:"1px solid rgba(255,255,255,0.05)"}}>
           <div className="mx-auto max-w-6xl px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-xs" style={{color:"rgba(226,232,240,0.3)"}}>
-              © {new Date().getFullYear()} CryptVest. All rights reserved. CryptVest is a simulated trading evaluation provider — not a broker or investment firm.
+              © {new Date().getFullYear()} CryptVest. All rights reserved. CryptVest is a crypto staking platform.
             </p>
             <div className="flex items-center gap-5">
               {["Terms","Privacy","Cookies"].map(l => (
