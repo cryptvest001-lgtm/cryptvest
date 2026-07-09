@@ -25,6 +25,8 @@ const STATUS_BADGES: Record<string, string> = {
   PAID: "badge-green",
 };
 
+const WITHDRAWAL_LIMIT = 50000;
+
 export default function WithdrawPage() {
   const [balances, setBalances] = useState<Balance[]>([]);
   const [history, setHistory] = useState<WithdrawalRequest[]>([]);
@@ -59,10 +61,17 @@ export default function WithdrawPage() {
     e.preventDefault();
     setError("");
     setSuccess("");
+
+    const requestAmount = Number(amount);
+    if (requestAmount > WITHDRAWAL_LIMIT) {
+      setError("Withdrawal requests are limited to $50,000 per request.");
+      return;
+    }
+
     setSubmitting(true);
     const res = await apiPostUser("/withdrawals/request", {
       asset,
-      amount: Number(amount),
+      amount: requestAmount,
       sourceType,
       destinationAddress: destination,
     });
@@ -86,6 +95,9 @@ export default function WithdrawPage() {
 
       <div className="glass p-6 space-y-4">
         <h2 className="text-base font-bold text-white">New Request</h2>
+        <p className="text-sm" style={{ color: "rgba(226,232,240,0.5)" }}>
+          Withdrawal limit: $50,000 per request.
+        </p>
         {error && <p className="alert-red text-sm">{error}</p>}
         {success && <p className="alert-green text-sm">{success}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -136,12 +148,19 @@ export default function WithdrawPage() {
               type="number"
               step="any"
               min="0"
+              max={WITHDRAWAL_LIMIT}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               className="input-dark w-full px-3 py-2.5 text-sm font-mono outline-none"
-              placeholder="0.00000000"
+              placeholder={`Max ${WITHDRAWAL_LIMIT.toLocaleString()}`}
               required
             />
+            <p
+              className="mt-2 text-xs"
+              style={{ color: "rgba(226,232,240,0.4)" }}
+            >
+              Maximum withdrawal amount is $50,000 per request.
+            </p>
           </div>
           <div>
             <label
