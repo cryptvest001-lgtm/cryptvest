@@ -8,18 +8,6 @@ import {
   ClipboardList,
   TrendingUp,
   ArrowUpFromLine,
-  Users,
-  BarChart2,
-  Wallet,
-  LogOut,
-  Menu,
-  X,
-  MessageSquare,
-} from "lucide-react";
-import {
-  ClipboardList,
-  TrendingUp,
-  ArrowUpFromLine,
   ArrowDownToLine,
   Users,
   BarChart2,
