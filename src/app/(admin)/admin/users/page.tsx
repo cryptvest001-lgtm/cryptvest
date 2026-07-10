@@ -29,6 +29,8 @@ const KYC_BADGES: Record<string, string> = {
   REJECTED: "badge-red",
 };
 
+type BalanceAction = "CREDIT" | "DEBIT" | "EARNINGS";
+
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [filtered, setFiltered] = useState<User[]>([]);
@@ -46,7 +48,7 @@ export default function AdminUsersPage() {
   const [showBalanceModal, setShowBalanceModal] = useState<User | null>(null);
   const [balanceAsset, setBalanceAsset] = useState("BTC");
   const [balanceAmount, setBalanceAmount] = useState("");
-  const [balanceType, setBalanceType] = useState<"CREDIT" | "DEBIT">("CREDIT");
+  const [balanceType, setBalanceType] = useState<BalanceAction>("CREDIT");
   const [balanceReason, setBalanceReason] = useState("");
   const [adjustingBalance, setAdjustingBalance] = useState(false);
   const [balanceError, setBalanceError] = useState("");
@@ -117,15 +119,19 @@ export default function AdminUsersPage() {
 
     setBalanceError("");
     setAdjustingBalance(true);
-    const res = await apiPostAdmin(
-      `/admin/users/${showBalanceModal.id}/balance`,
-      {
-        asset: balanceAsset,
-        amount: Number(balanceAmount),
-        type: balanceType,
-        reason: balanceReason || undefined,
-      },
-    );
+    const res =
+      balanceType === "EARNINGS"
+        ? await apiPostAdmin(`/admin/users/${showBalanceModal.id}/earnings`, {
+            asset: balanceAsset,
+            amount: Number(balanceAmount),
+            reason: balanceReason || undefined,
+          })
+        : await apiPostAdmin(`/admin/users/${showBalanceModal.id}/balance`, {
+            asset: balanceAsset,
+            amount: Number(balanceAmount),
+            type: balanceType,
+            reason: balanceReason || undefined,
+          });
     setAdjustingBalance(false);
 
     if (res.ok) {
@@ -133,7 +139,9 @@ export default function AdminUsersPage() {
       setBalanceAmount("");
       setBalanceReason("");
       alert(
-        `Successfully ${balanceType === "CREDIT" ? "credited" : "debited"} ${balanceAmount} ${balanceAsset}`,
+        balanceType === "EARNINGS"
+          ? `Successfully added ${balanceAmount} ${balanceAsset} to user earnings`
+          : `Successfully ${balanceType === "CREDIT" ? "credited" : "debited"} ${balanceAmount} ${balanceAsset}`,
       );
     } else {
       const b = await res.json().catch(() => ({}));
@@ -252,7 +260,7 @@ export default function AdminUsersPage() {
                         <button
                           onClick={() => setShowBalanceModal(u)}
                           className="p-1.5 rounded-lg hover:bg-white/10 text-purple-400 transition-all"
-                          title="Fund / Debit Balance"
+                          title="Fund, debit, or add earnings"
                         >
                           <Wallet size={16} />
                         </button>
@@ -382,7 +390,7 @@ export default function AdminUsersPage() {
           <div className="glass w-full max-w-lg p-6 space-y-4 animate-in fade-in zoom-in duration-200">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-white text-wrap truncate">
-                Fund / Debit: {showBalanceModal.email}
+                Fund / Debit / Earnings: {showBalanceModal.email}
               </h2>
               <button
                 onClick={() => setShowBalanceModal(null)}
@@ -403,12 +411,13 @@ export default function AdminUsersPage() {
                   <select
                     value={balanceType}
                     onChange={(e) =>
-                      setBalanceType(e.target.value as "CREDIT" | "DEBIT")
+                      setBalanceType(e.target.value as BalanceAction)
                     }
                     className="select-dark w-full px-3 py-2 text-sm outline-none"
                   >
                     <option value="CREDIT">Fund (Credit)</option>
                     <option value="DEBIT">Debit</option>
+                    <option value="EARNINGS">Add Earnings</option>
                   </select>
                 </div>
                 <div>
@@ -439,6 +448,12 @@ export default function AdminUsersPage() {
                   placeholder="0.00000000"
                   required
                 />
+                {balanceType === "EARNINGS" && (
+                  <p className="mt-2 text-xs text-gray-500">
+                    Earnings are added to the user&apos;s latest active stake for
+                    the selected asset.
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-widest mb-2 text-gray-400">
@@ -467,7 +482,9 @@ export default function AdminUsersPage() {
                     ? "Processing..."
                     : balanceType === "CREDIT"
                       ? "Fund Account"
-                      : "Debit Account"}
+                      : balanceType === "DEBIT"
+                        ? "Debit Account"
+                        : "Add Earnings"}
                 </button>
               </div>
             </form>

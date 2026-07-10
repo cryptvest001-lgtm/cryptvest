@@ -24,9 +24,11 @@ const empty = {
 export default function AdminPlansPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [form, setForm] = useState(empty);
+  const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   async function load() {
     const res = await apiGetAdmin("/admin/stakes/plans");
@@ -42,19 +44,35 @@ export default function AdminPlansPage() {
     setForm((f) => ({ ...f, [k]: v }));
   }
 
-  async function handleCreate(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-    setSubmitting(true);
-    const res = await apiPostAdmin("/admin/stakes/plans", {
+  function planPayload() {
+    const clearingValue = editingPlanId ? null : undefined;
+
+    return {
       name: form.name,
       type: form.type,
-      termDays: form.termDays ? Number(form.termDays) : undefined,
+      termDays:
+        form.type === "LOCKED" && form.termDays
+          ? Number(form.termDays)
+          : clearingValue,
       dailyRatePercent: Number(form.dailyRatePercent),
-      earlyExitPenaltyPercent: form.earlyExitPenaltyPercent
-        ? Number(form.earlyExitPenaltyPercent)
-        : undefined,
-    });
+      earlyExitPenaltyPercent:
+        form.type === "LOCKED" && form.earlyExitPenaltyPercent
+          ? Number(form.earlyExitPenaltyPercent)
+          : clearingValue,
+    };
+  }
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    setSubmitting(true);
+    const res = await apiPostAdmin(
+      editingPlanId
+        ? `/admin/stakes/plans/${editingPlanId}`
+        : "/admin/stakes/plans",
+      planPayload(),
+    );
     setSubmitting(false);
     if (!res.ok) {
       const b = await res.json().catch(() => ({}));
@@ -62,7 +80,30 @@ export default function AdminPlansPage() {
       return;
     }
     setForm(empty);
+    setEditingPlanId(null);
+    setSuccess(editingPlanId ? "Plan updated." : "Plan created.");
     load();
+  }
+
+  function startEdit(plan: Plan) {
+    setEditingPlanId(plan.id);
+    setError("");
+    setSuccess("");
+    setForm({
+      name: plan.name,
+      type: plan.type,
+      termDays: plan.termDays ? String(plan.termDays) : "",
+      dailyRatePercent: String(plan.dailyRatePercent),
+      earlyExitPenaltyPercent: plan.earlyExitPenaltyPercent
+        ? String(plan.earlyExitPenaltyPercent)
+        : "",
+    });
+  }
+
+  function cancelEdit() {
+    setEditingPlanId(null);
+    setForm(empty);
+    setError("");
   }
 
   async function toggleActive(plan: Plan) {
@@ -80,10 +121,13 @@ export default function AdminPlansPage() {
       <h1 className="text-2xl font-extrabold text-white">Stake Plans</h1>
 
       <div className="glass p-6 space-y-4">
-        <h2 className="text-base font-bold text-white">Create Plan</h2>
+        <h2 className="text-base font-bold text-white">
+          {editingPlanId ? "Edit Plan" : "Create Plan"}
+        </h2>
         {error && <p className="alert-red text-sm">{error}</p>}
+        {success && <p className="alert-green text-sm">{success}</p>}
         <form
-          onSubmit={handleCreate}
+          onSubmit={handleSave}
           className="grid grid-cols-1 sm:grid-cols-2 gap-4"
         >
           <div className="sm:col-span-1">
@@ -176,8 +220,23 @@ export default function AdminPlansPage() {
               disabled={submitting}
               className="btn-primary px-5 py-2.5 text-sm disabled:opacity-50"
             >
-              {submitting ? "Creating..." : "Create Plan"}
+              {submitting
+                ? editingPlanId
+                  ? "Saving..."
+                  : "Creating..."
+                : editingPlanId
+                  ? "Save Changes"
+                  : "Create Plan"}
             </button>
+            {editingPlanId && (
+              <button
+                type="button"
+                onClick={cancelEdit}
+                className="btn-outline ml-3 px-5 py-2.5 text-sm"
+              >
+                Cancel
+              </button>
+            )}
           </div>
         </form>
       </div>
@@ -218,41 +277,33 @@ export default function AdminPlansPage() {
                       : ""}
                   </p>
                 </div>
-                <button
-                  onClick={() => toggleActive(plan)}
-                  className="badge transition-all"
-                  style={
-                    plan.active
-                      ? {
-                          background: "rgba(34,197,94,0.12)",
-                          color: "#22c55e",
-                          border: "1px solid rgba(34,197,94,0.25)",
-                        }
-                      : {
-                          background: "rgba(255,255,255,0.04)",
-                          color: "rgba(226,232,240,0.45)",
-                          border: "1px solid rgba(255,255,255,0.08)",
-                        }
-                  }
-                  onMouseEnter={(e) => {
-                    if (plan.active)
-                      (e.currentTarget as HTMLElement).style.background =
-                        "rgba(34,197,94,0.2)";
-                    else
-                      (e.currentTarget as HTMLElement).style.background =
-                        "rgba(255,255,255,0.08)";
-                  }}
-                  onMouseLeave={(e) => {
-                    if (plan.active)
-                      (e.currentTarget as HTMLElement).style.background =
-                        "rgba(34,197,94,0.12)";
-                    else
-                      (e.currentTarget as HTMLElement).style.background =
-                        "rgba(255,255,255,0.04)";
-                  }}
-                >
-                  {plan.active ? "Active" : "Inactive"}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => startEdit(plan)}
+                    className="btn-outline px-3 py-1.5 text-xs"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => toggleActive(plan)}
+                    className="badge transition-all"
+                    style={
+                      plan.active
+                        ? {
+                            background: "rgba(34,197,94,0.12)",
+                            color: "#22c55e",
+                            border: "1px solid rgba(34,197,94,0.25)",
+                          }
+                        : {
+                            background: "rgba(255,255,255,0.04)",
+                            color: "rgba(226,232,240,0.45)",
+                            border: "1px solid rgba(255,255,255,0.08)",
+                          }
+                    }
+                  >
+                    {plan.active ? "Active" : "Inactive"}
+                  </button>
+                </div>
               </div>
             ))}
           </div>
