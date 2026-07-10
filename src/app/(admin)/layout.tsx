@@ -23,6 +23,11 @@ const navItems = [
   { href: "/admin/kyc", label: "KYC Queue", icon: ClipboardList },
   { href: "/admin/deposits", label: "Deposits", icon: ArrowDownToLine },
   { href: "/admin/plans", label: "Stake Plans", icon: TrendingUp },
+  {
+    href: "/admin/stake-requests",
+    label: "Stake Requests",
+    icon: ClipboardList,
+  },
   { href: "/admin/withdrawals", label: "Withdrawals", icon: ArrowUpFromLine },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/support", label: "Support", icon: MessageSquare },
