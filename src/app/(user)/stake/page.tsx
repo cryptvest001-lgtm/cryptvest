@@ -28,22 +28,10 @@ interface Stake {
   startDate: string;
 }
 
-interface StakeRequest {
-  id: string;
-  asset: string;
-  amount: string;
-  status: string;
-  reason: string | null;
-  createdAt: string;
-  reviewedAt: string | null;
-  stakePlan: { name: string };
-}
-
 export default function StakePage() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [balances, setBalances] = useState<Balance[]>([]);
   const [myStakes, setMyStakes] = useState<Stake[]>([]);
-  const [myRequests, setMyRequests] = useState<StakeRequest[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [asset, setAsset] = useState("BTC");
   const [amount, setAmount] = useState("");
@@ -53,16 +41,14 @@ export default function StakePage() {
   const [success, setSuccess] = useState("");
 
   async function load() {
-    const [pRes, bRes, sRes, rRes] = await Promise.all([
+    const [pRes, bRes, sRes] = await Promise.all([
       apiGetUser("/stakes/plans"),
       apiGetUser("/deposits/balances"),
       apiGetUser("/stakes/my"),
-      apiGetUser("/stakes/requests/my"),
     ]);
     if (pRes.ok) setPlans((await pRes.json()).plans);
     if (bRes.ok) setBalances((await bRes.json()).balances);
     if (sRes.ok) setMyStakes((await sRes.json()).stakes);
-    if (rRes.ok) setMyRequests((await rRes.json()).requests);
     setLoading(false);
   }
 
@@ -74,13 +60,13 @@ export default function StakePage() {
     balances.find((b) => b.asset === asset)?.available ?? 0,
   );
 
-  async function handleStakeRequest(e: React.FormEvent) {
+  async function handleStake(e: React.FormEvent) {
     e.preventDefault();
     if (!selectedPlan) return;
     setError("");
     setSuccess("");
     setSubmitting(true);
-    const res = await apiPostUser("/stakes/requests", {
+    const res = await apiPostUser("/stakes", {
       stakePlanId: selectedPlan.id,
       asset,
       amount: Number(amount),
@@ -88,10 +74,10 @@ export default function StakePage() {
     setSubmitting(false);
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
-      setError(body.error || "Stake request failed");
+      setError(body.error || "Stake failed");
       return;
     }
-    setSuccess("Stake request submitted. An admin will review it shortly.");
+    setSuccess("Staked successfully!");
     setAmount("");
     setSelectedPlan(null);
     load();
@@ -272,7 +258,7 @@ export default function StakePage() {
 
             {selectedPlan && (
               <form
-                onSubmit={handleStakeRequest}
+                onSubmit={handleStake}
                 className="border-t border-white/[0.06] pt-4 space-y-4"
               >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -319,62 +305,12 @@ export default function StakePage() {
                   className="btn-primary w-full py-2.5 text-sm"
                 >
                   {submitting
-                    ? "Submitting..."
-                    : `Request ${selectedPlan.name}`}
+                    ? "Staking..."
+                    : `Stake with ${selectedPlan.name}`}
                 </button>
               </form>
             )}
           </div>
-
-          {myRequests.length > 0 && (
-            <div className="glass overflow-hidden">
-              <div className="px-5 py-4 border-b border-white/[0.06]">
-                <h2 className="text-base font-bold text-white">
-                  Stake Requests
-                </h2>
-              </div>
-              <div>
-                {myRequests.map((r) => (
-                  <div
-                    key={r.id}
-                    className="flex items-center justify-between px-5 py-3 border-b border-white/[0.05] last:border-b-0"
-                  >
-                    <div>
-                      <p className="text-sm font-bold text-white">
-                        {r.stakePlan.name} · {r.asset}
-                      </p>
-                      <p
-                        className="font-mono text-xs tabular-nums"
-                        style={{ color: "rgba(226,232,240,0.45)" }}
-                      >
-                        {Number(r.amount).toFixed(8)} requested ·{" "}
-                        {new Date(r.createdAt).toLocaleDateString()}
-                      </p>
-                      {r.reason && (
-                        <p
-                          className="text-xs italic"
-                          style={{ color: "rgba(226,232,240,0.45)" }}
-                        >
-                          {r.reason}
-                        </p>
-                      )}
-                    </div>
-                    <span
-                      className={`badge ${
-                        r.status === "APPROVED"
-                          ? "badge-green"
-                          : r.status === "REJECTED"
-                            ? "badge-red"
-                            : "badge-cyan"
-                      }`}
-                    >
-                      {r.status}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           {myStakes.length > 0 && (
             <div className="glass overflow-hidden">

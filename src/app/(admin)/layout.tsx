@@ -24,8 +24,8 @@ const navItems = [
   { href: "/admin/deposits", label: "Deposits", icon: ArrowDownToLine },
   { href: "/admin/plans", label: "Stake Plans", icon: TrendingUp },
   {
-    href: "/admin/stake-requests",
-    label: "Stake Requests",
+    href: "/admin/stake-users",
+    label: "Stake Users",
     icon: ClipboardList,
   },
   { href: "/admin/withdrawals", label: "Withdrawals", icon: ArrowUpFromLine },
